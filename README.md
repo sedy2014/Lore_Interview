@@ -118,3 +118,14 @@ Verification for these notebooks involves:
     * Are there false positives (normal messages flagged as anomalous)?
     * Are there potential false negatives (obvious anomalies that were missed)?
 4.  **Threshold/Parameter  Changes:** (For further exploration) Experiment by changing thresholds (e.g., percentile for anomaly distance, message length, sentiment shift magnitude) or model parameters (e.g., `k` in K-Means) to observe the impact on detection results.
+
+## 7. Real time adaptaion
+While the current implementation processes messages in batches for demonstration and evaluation, the core pipeline is designed so that **real-time anomaly detection can be achieved with minimal changes**:
+for example, The PCA and K-Means models are trained offline on historical data. Once trained, these models can be saved and reused for inference on new messages as they arrive, without retraining.( e.g `joblib.dump(pca, 'pca_model.joblib'))
+- **Per-Message Processing:**  
+  Each new incoming message can be processed individually:
+    - Convert the message to an embedding using the same Sentence Transformer model.
+    - Apply the saved PCA transformation to reduce dimensionality.
+    - Assign the message to a cluster using the saved K-Means model.
+    - Compute the distance to the nearest cluster centroid.
+    - Flag the message as anomalous if its distance exceeds the pre-computed anomaly threshold.(can be sent to through cloud logging solution (e.g., AWS CloudWatch, Azure Monitor, Google Cloud Logging)
